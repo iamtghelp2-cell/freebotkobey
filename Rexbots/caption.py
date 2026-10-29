@@ -1,3 +1,8 @@
+# ========================================================
+# IamTGHelp - Custom Caption & Header Management
+# Powered & Maintained by: @iamtghelp
+# ========================================================
+
 from pyrogram import Client, filters, enums
 from pyrogram.types import Message
 from database.db import db
@@ -9,32 +14,28 @@ from database.db import db
 async def set_caption(client: Client, message: Message):
     user_id = message.from_user.id
     
-    # 1. Ensure User Exists
     if not await db.is_user_exist(user_id):
         await db.add_user(user_id, message.from_user.first_name)
 
-    # 2. Validate Input
     if len(message.command) < 2:
         return await message.reply_text(
-            "<b>⚠️ Usage Error</b>\n\n"
-            "Please provide the caption text after the command.\n\n"
-            "<b>Correct Format:</b>\n"
-            "<code>/set_caption Your Caption Here</code>\n\n"
-            "<b>Supported Placeholders:</b>\n"
-            "• <code>{filename}</code> : Original File Name\n"
-            "• <code>{size}</code> : File Size\n\n"
-            "<i>Example:</i> <code>/set_caption File: {filename} | Size: {size}</code>",
+            "<b>⚠️ उपयोग का सही तरीका:</b>\n\n"
+            "कमांड के बाद अपना कस्टम कैप्शन लिखें।\n\n"
+            "<b>फॉर्मेट:</b>\n"
+            "<code>/set_caption फ़ाइल: {filename} | साइज: {size} | @iamtghelp</code>\n\n"
+            "<b>सपोर्टेड टैग्स:</b>\n"
+            "• <code>{filename}</code> : ओरिजिनल फ़ाइल का नाम\n"
+            "• <code>{size}</code> : फ़ाइल का साइज\n",
             parse_mode=enums.ParseMode.HTML
         )
 
-    # 3. Save to Database
     caption = message.text.split(" ", 1)[1].strip()
     await db.set_caption(user_id, caption)
 
     await message.reply_text(
-        "<b>✅ Custom Caption Saved!</b>\n\n"
+        "<b>✅ कस्टम कैप्शन सफलतापूर्वक सेव हो गया!</b>\n\n"
         f"<b>Preview:</b>\n<code>{caption}</code>\n\n"
-        "<i>This caption will be applied to your future downloads.</i>",
+        "<i>यह कैप्शन आपकी आने वाली सभी फाइलों पर लागू होगा।</i>",
         parse_mode=enums.ParseMode.HTML
     )
 
@@ -45,25 +46,23 @@ async def set_caption(client: Client, message: Message):
 async def see_caption(client: Client, message: Message):
     user_id = message.from_user.id
     
-    # 1. Ensure User Exists
     if not await db.is_user_exist(user_id):
         await db.add_user(user_id, message.from_user.first_name)
 
-    # 2. Fetch Caption
     caption = await db.get_caption(user_id)
 
     if caption:
         await message.reply_text(
-            "<b>📝 Your Custom Caption</b>\n\n"
+            "<b>📝 आपका वर्तमान कस्टम कैप्शन:</b>\n\n"
             f"<code>{caption}</code>\n\n"
-            "<i>To delete this, use /del_caption</i>",
+            "<i>इसे हटाने के लिए /del_caption भेजें।</i>",
             parse_mode=enums.ParseMode.HTML
         )
     else:
         await message.reply_text(
-            "<b>❌ No Caption Set</b>\n\n"
-            "You are currently using the default bot caption.\n"
-            "<i>Use /set_caption to customize it.</i>",
+            "<b>❌ कोई कस्टम कैप्शन सेट नहीं है</b>\n\n"
+            "आप अभी डिफ़ॉल्ट बॉट कैप्शन का उपयोग कर रहे हैं।\n"
+            "<i>नया जोड़ने के लिए <code>/set_caption &lt;टेक्स्ट&gt;</code> भेजें।</i>",
             parse_mode=enums.ParseMode.HTML
         )
 
@@ -74,25 +73,21 @@ async def see_caption(client: Client, message: Message):
 async def del_caption(client: Client, message: Message):
     user_id = message.from_user.id
     
-    # 1. Ensure User Exists
     if not await db.is_user_exist(user_id):
         await db.add_user(user_id, message.from_user.first_name)
 
-    # 2. Check if caption exists
     caption = await db.get_caption(user_id)
 
     if not caption:
         return await message.reply_text(
-            "<b>⚠️ No Caption Found</b>\n\n"
-            "You don't have a custom caption set.",
+            "<b>⚠️ कोई कस्टम कैप्शन नहीं मिला जिसे हटाया जा सके।</b>",
             parse_mode=enums.ParseMode.HTML
         )
 
-    # 3. Delete from Database
     await db.del_caption(user_id)
 
     await message.reply_text(
-        "<b>🗑 Custom Caption Removed</b>\n\n"
-        "<i>Your uploads will now use the default bot caption.</i>",
+        "<b>🗑 कस्टम कैप्शन हटा दिया गया है।</b>\n\n"
+        "<i>अब फ़ाइलें ओरिजिनल कैप्शन के साथ भेजी जाएँगी।</i>",
         parse_mode=enums.ParseMode.HTML
     )
